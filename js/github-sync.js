@@ -101,7 +101,9 @@ export async function pullFromGitHub() {
     if (!result) return null;
 
     _fileSha = result.sha;
-    const content = atob(result.content);
+    const binary = atob(result.content);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const content = new TextDecoder().decode(bytes);
     const data = JSON.parse(content);
 
     _lastSyncTime = new Date().toISOString();
@@ -127,7 +129,9 @@ export async function pushToGitHub(stateJson) {
       if (existing) _fileSha = existing.sha;
     }
 
-    const content = btoa(unescape(encodeURIComponent(stateJson)));
+    const bytes = new TextEncoder().encode(stateJson);
+    const binary = Array.from(bytes, b => String.fromCharCode(b)).join('');
+    const content = btoa(binary);
 
     const body = {
       message: `sync: ${new Date().toLocaleString('fr-FR')}`,
