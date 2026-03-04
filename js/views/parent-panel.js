@@ -238,7 +238,7 @@ export function render(container, params) {
 
   // Sync save config
   document.getElementById('sync-save-btn')?.addEventListener('click', () => {
-    const token = document.getElementById('sync-token').value.trim();
+    const token = document.getElementById('sync-token').value.replace(/\s/g, '');
     const owner = document.getElementById('sync-owner').value.trim();
     const repo = document.getElementById('sync-repo').value.trim();
     saveSyncConfig({ token, owner, repo });
@@ -251,7 +251,7 @@ export function render(container, params) {
   document.getElementById('sync-test-btn')?.addEventListener('click', async () => {
     const statusEl = document.getElementById('sync-status');
     // Save current field values first
-    const token = document.getElementById('sync-token').value.trim();
+    const token = document.getElementById('sync-token').value.replace(/\s/g, '');
     const owner = document.getElementById('sync-owner').value.trim();
     const repo = document.getElementById('sync-repo').value.trim();
     saveSyncConfig({ token, owner, repo });

@@ -1,6 +1,6 @@
 // === MesRoutines Service Worker ===
 
-const CACHE_NAME = 'mesroutines-v1';
+const CACHE_NAME = 'mesroutines-v2';
 
 const ASSETS = [
   './',
