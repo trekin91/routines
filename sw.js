@@ -20,6 +20,7 @@ const ASSETS = [
   './js/icons.js',
   './js/data.js',
   './js/pwa.js',
+  './js/github-sync.js',
   './js/components/header.js',
   './js/components/modal.js',
   './js/components/pin-pad.js',

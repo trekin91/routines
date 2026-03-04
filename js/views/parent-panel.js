@@ -5,6 +5,7 @@ import { navigate } from '../router.js';
 import { showConfirm } from '../components/modal.js';
 import { DAYS_SHORT, FR } from '../utils.js';
 import { onKioskToggle } from '../kiosk.js';
+import { getSyncConfig, saveSyncConfig, testConnection, manualSync } from '../github-sync.js';
 
 export function render(container, params) {
   const state = getState();
@@ -115,6 +116,42 @@ export function render(container, params) {
         </div>
       </section>
 
+      <!-- GitHub Sync Section -->
+      <section style="margin-bottom:32px;">
+        <h2 style="margin-bottom:12px;">☁️ Synchronisation GitHub</h2>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div class="list-item">
+            <div class="list-item__content">
+              <div class="list-item__title">Activer la sync</div>
+              <div class="list-item__subtitle">Sauvegarde auto sur GitHub à chaque action</div>
+            </div>
+            <button class="toggle${getSyncConfig().enabled ? ' toggle--active' : ''}" id="sync-toggle"></button>
+          </div>
+          <div id="sync-fields" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <label style="font-size:13px; font-weight:600;">Token GitHub</label>
+              <input type="password" id="sync-token" class="input" placeholder="ghp_..." value="${getSyncConfig().token}" style="font-size:14px;">
+            </div>
+            <div style="display:flex; gap:8px;">
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:13px; font-weight:600;">Owner</label>
+                <input type="text" id="sync-owner" class="input" placeholder="username" value="${getSyncConfig().owner}" style="font-size:14px;">
+              </div>
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <label style="font-size:13px; font-weight:600;">Repo</label>
+                <input type="text" id="sync-repo" class="input" placeholder="repo-name" value="${getSyncConfig().repo}" style="font-size:14px;">
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-outline" id="sync-test-btn">🔗 Tester</button>
+              <button class="btn btn-outline" id="sync-save-btn">💾 Enregistrer</button>
+              <button class="btn btn-primary" id="sync-now-btn">🔄 Sync maintenant</button>
+            </div>
+            <div id="sync-status" style="font-size:13px; color:var(--text-secondary);"></div>
+          </div>
+        </div>
+      </section>
+
       <!-- Data Section -->
       <section>
         <h2 style="margin-bottom:12px;">${FR.parent.data}</h2>
@@ -191,6 +228,63 @@ export function render(container, params) {
     this.classList.toggle('toggle--active');
     updateSettings({ vibration: this.classList.contains('toggle--active') });
   });
+
+  // Sync toggle
+  document.getElementById('sync-toggle')?.addEventListener('click', function() {
+    this.classList.toggle('toggle--active');
+    const enabled = this.classList.contains('toggle--active');
+    saveSyncConfig({ enabled });
+  });
+
+  // Sync save config
+  document.getElementById('sync-save-btn')?.addEventListener('click', () => {
+    const token = document.getElementById('sync-token').value.trim();
+    const owner = document.getElementById('sync-owner').value.trim();
+    const repo = document.getElementById('sync-repo').value.trim();
+    saveSyncConfig({ token, owner, repo });
+    const statusEl = document.getElementById('sync-status');
+    statusEl.textContent = '✅ Configuration sauvegardée';
+    setTimeout(() => { if (statusEl.isConnected) statusEl.textContent = ''; }, 3000);
+  });
+
+  // Sync test connection
+  document.getElementById('sync-test-btn')?.addEventListener('click', async () => {
+    const statusEl = document.getElementById('sync-status');
+    // Save current field values first
+    const token = document.getElementById('sync-token').value.trim();
+    const owner = document.getElementById('sync-owner').value.trim();
+    const repo = document.getElementById('sync-repo').value.trim();
+    saveSyncConfig({ token, owner, repo });
+
+    statusEl.textContent = '⏳ Test en cours...';
+    const result = await testConnection();
+    if (result.ok) {
+      statusEl.textContent = `✅ Connecté à ${result.repoName}`;
+    } else {
+      statusEl.textContent = `❌ ${result.error}`;
+    }
+  });
+
+  // Sync now
+  document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
+    const statusEl = document.getElementById('sync-status');
+    statusEl.textContent = '⏳ Synchronisation...';
+    const result = await manualSync(getState);
+    if (result.ok) {
+      statusEl.textContent = `✅ Sync réussie — ${new Date().toLocaleTimeString('fr-FR')}`;
+    } else {
+      statusEl.textContent = `❌ ${result.error}`;
+    }
+  });
+
+  // Show last sync time
+  const syncConfig = getSyncConfig();
+  if (syncConfig.lastSync) {
+    const statusEl = document.getElementById('sync-status');
+    if (statusEl) {
+      statusEl.textContent = `Dernière sync : ${new Date(syncConfig.lastSync).toLocaleString('fr-FR')}`;
+    }
+  }
 
   // Data buttons
   container.querySelectorAll('.data-btn').forEach(btn => {

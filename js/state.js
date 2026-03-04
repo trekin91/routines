@@ -1,7 +1,9 @@
 // === State Management ===
-// Single source of truth backed by localStorage
+// Single source of truth backed by localStorage + optional GitHub sync
 
 const STORAGE_KEY = 'mesroutines_data';
+
+import { initSync, debouncedPush, pullFromGitHub, getSyncConfig } from './github-sync.js';
 
 let _state = null;
 let _listeners = [];
@@ -29,7 +31,30 @@ export function loadState() {
   } catch {
     _state = createDefaultState();
   }
+
+  // Init GitHub sync config
+  initSync();
+
+  // Try pulling from GitHub in background (non-blocking)
+  loadFromGitHub();
+
   return _state;
+}
+
+async function loadFromGitHub() {
+  try {
+    const config = getSyncConfig();
+    if (!config.enabled || !config.token) return;
+
+    const remote = await pullFromGitHub();
+    if (remote && remote.version) {
+      _state = remote;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(_state));
+      _listeners.forEach(fn => fn(_state));
+    }
+  } catch {
+    // Silently fail — local data is the fallback
+  }
 }
 
 export function getState() {
@@ -38,8 +63,12 @@ export function getState() {
 }
 
 export function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(_state));
+  const json = JSON.stringify(_state);
+  localStorage.setItem(STORAGE_KEY, json);
   _listeners.forEach(fn => fn(_state));
+
+  // Push to GitHub (debounced, non-blocking)
+  debouncedPush(json);
 }
 
 export function replaceState(newState) {
