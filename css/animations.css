@@ -1,0 +1,127 @@
+/* === Keyframe Animations === */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 152, 0, 0); }
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes starSpin {
+  0% { transform: rotate(0deg) scale(0); }
+  50% { transform: rotate(180deg) scale(1.3); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+@keyframes confettiDrop {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiFloat {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(30px, -50px) rotate(180deg);
+  }
+  50% {
+    transform: translate(-20px, -100px) rotate(360deg);
+  }
+  75% {
+    transform: translate(40px, -150px) rotate(540deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-10px, -200px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes countUp {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px var(--color-primary); }
+  50% { box-shadow: 0 0 20px var(--color-primary), 0 0 40px var(--color-primary-light); }
+}
+
+/* === Animation Classes === */
+.anim-fade-in { animation: fadeIn var(--tr-normal); }
+.anim-slide-up { animation: slideUp var(--tr-normal); }
+.anim-bounce-in { animation: bounceIn 0.5s ease; }
+.anim-shake { animation: shake 0.5s ease; }
+.anim-check-pop { animation: checkPop 0.4s ease; }
+.anim-star-spin { animation: starSpin 0.6s ease; }
+.anim-count-up { animation: countUp 0.4s ease; }
+.anim-glow { animation: glow 2s infinite; }
+
+/* === Celebration Overlay === */
+.celebration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 300;
+  overflow: hidden;
+}
+
+.celebration__particle {
+  position: absolute;
+  font-size: 32px;
+  animation: confettiFloat 2s ease-out forwards;
+}
+
+/* === Page Transitions === */
+.view-enter {
+  animation: fadeIn 0.2s ease, slideUp 0.3s ease;
+}
+
+.view-exit {
+  animation: fadeOut 0.2s ease;
+}
