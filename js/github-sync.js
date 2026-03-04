@@ -74,7 +74,7 @@ async function githubFetch(path, options = {}) {
   const response = await fetch(url, {
     ...options,
     headers: {
-      'Authorization': `Bearer ${config.token}`,
+      'Authorization': `token ${config.token}`,
       'Accept': 'application/vnd.github.v3+json',
       'Content-Type': 'application/json',
       ...options.headers,
@@ -180,7 +180,7 @@ export async function testConnection() {
     debug.push(`url: ${url}`);
     const response = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${config.token}`,
+        'Authorization': `token ${config.token}`,
         'Accept': 'application/vnd.github.v3+json',
       },
     });
