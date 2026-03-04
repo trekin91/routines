@@ -130,7 +130,7 @@ export function render(container, params) {
           <div id="sync-fields" style="display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; flex-direction:column; gap:4px;">
               <label style="font-size:13px; font-weight:600;">Token GitHub</label>
-              <input type="password" id="sync-token" class="input" placeholder="ghp_..." value="${getSyncConfig().token}" style="font-size:14px;">
+              <input type="text" id="sync-token" class="input" placeholder="ghp_..." value="${getSyncConfig().token}" style="font-size:14px;">
             </div>
             <div style="display:flex; gap:8px;">
               <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
@@ -147,7 +147,7 @@ export function render(container, params) {
               <button class="btn btn-outline" id="sync-save-btn">💾 Enregistrer</button>
               <button class="btn btn-primary" id="sync-now-btn">🔄 Sync maintenant</button>
             </div>
-            <div id="sync-status" style="font-size:13px; color:var(--text-secondary);"></div>
+            <pre id="sync-status" style="font-size:12px; color:var(--text-secondary); white-space:pre-wrap; margin:0; font-family:monospace;"></pre>
           </div>
         </div>
       </section>

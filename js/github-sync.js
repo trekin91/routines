@@ -169,12 +169,15 @@ export function debouncedPush(stateJson) {
 
 export async function testConnection() {
   const config = getSyncConfig();
+  const debug = [`token: ${config.token?.length || 0} chars, starts "${config.token?.slice(0, 12)}..."`, `owner: "${config.owner}"`, `repo: "${config.repo}"`];
+
   if (!config.token || !config.owner || !config.repo) {
-    return { ok: false, error: 'Configuration incomplète' };
+    return { ok: false, error: `Config incomplète\n${debug.join('\n')}` };
   }
 
   try {
     const url = `${API_BASE}/repos/${config.owner}/${config.repo}`;
+    debug.push(`url: ${url}`);
     const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${config.token}`,
@@ -182,16 +185,18 @@ export async function testConnection() {
       },
     });
 
+    debug.push(`status: ${response.status}`);
     if (!response.ok) {
-      if (response.status === 401) return { ok: false, error: 'Token invalide' };
-      if (response.status === 404) return { ok: false, error: 'Repo introuvable' };
-      return { ok: false, error: `Erreur ${response.status}` };
+      const body = await response.json().catch(() => ({}));
+      debug.push(`body: ${JSON.stringify(body).slice(0, 200)}`);
+      return { ok: false, error: `Erreur ${response.status}\n${debug.join('\n')}` };
     }
 
     const repo = await response.json();
     return { ok: true, repoName: repo.full_name };
   } catch (e) {
-    return { ok: false, error: e.message };
+    debug.push(`exception: ${e.message}`);
+    return { ok: false, error: debug.join('\n') };
   }
 }
 
