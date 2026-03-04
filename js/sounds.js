@@ -39,22 +39,45 @@ function playNote(freq, startTime, duration, type = 'sine', volume = 0.3) {
 
 // === Sound Effects ===
 
-// Notification perso — 2 notes douces montantes (Do-Mi)
+// Sirène alarme — montée/descente qui se répète
+function playSiren(startTime, duration, lowFreq, highFreq, volume = 0.6) {
+  const ctx = getContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sawtooth';
+  // Montée-descente en boucle
+  const cycles = Math.floor(duration / 0.6);
+  for (let i = 0; i < cycles; i++) {
+    const t = startTime + i * 0.6;
+    osc.frequency.setValueAtTime(lowFreq, t);
+    osc.frequency.linearRampToValueAtTime(highFreq, t + 0.3);
+    osc.frequency.linearRampToValueAtTime(lowFreq, t + 0.6);
+  }
+
+  gain.gain.setValueAtTime(volume, startTime);
+  gain.gain.setValueAtTime(volume, startTime + duration - 0.05);
+  gain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+// Notification perso — sirène alarme 3 secondes
 export function playNotification() {
   const ctx = getContext();
   const now = ctx.currentTime;
-  playNote(523.25, now, 0.25, 'sine', 0.4);       // Do5
-  playNote(659.25, now + 0.2, 0.35, 'sine', 0.4);  // Mi5
+  playSiren(now, 3, 600, 1200, 0.6);
 }
 
-// Notification commune — carillon festif (Do-Mi-Sol-Do)
+// Notification commune — double sirène 4 secondes (plus intense)
 export function playNotificationFamily() {
   const ctx = getContext();
   const now = ctx.currentTime;
-  playNote(523.25, now, 0.2, 'sine', 0.35);         // Do5
-  playNote(659.25, now + 0.15, 0.2, 'sine', 0.35);  // Mi5
-  playNote(783.99, now + 0.3, 0.2, 'sine', 0.35);   // Sol5
-  playNote(1046.5, now + 0.45, 0.4, 'sine', 0.4);   // Do6
+  playSiren(now, 4, 500, 1400, 0.7);
+  playSiren(now, 4, 700, 1000, 0.3); // 2e couche désaccordée
 }
 
 // Step complete — petit "pop" satisfaisant
