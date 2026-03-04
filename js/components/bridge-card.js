@@ -1,8 +1,8 @@
 // === Bridge Card Component (shared routine) ===
 
-import { getRoutineProgress, getChild } from '../state.js';
-import { navigate } from '../router.js';
+import { getRoutineProgress, getChild, completeRoutine } from '../state.js';
 import { isTimeInWindow } from '../utils.js';
+import { playSound } from '../sounds.js';
 
 export function renderBridgeCard(routine) {
   const isActive = isTimeInWindow(routine.time, 5);
@@ -14,10 +14,8 @@ export function renderBridgeCard(routine) {
   const childStatuses = routine.assignedTo.map(childId => {
     const child = getChild(childId);
     const progress = getRoutineProgress(childId, routine.id);
-    const done = progress.completedSteps.length;
-    const total = progress.totalSteps;
     const isComplete = !!progress.completedAt;
-    return { child, done, total, isComplete };
+    return { child, isComplete };
   });
 
   const allComplete = childStatuses.every(s => s.isComplete);
@@ -30,12 +28,15 @@ export function renderBridgeCard(routine) {
       ${allComplete ? '<span>✅</span>' : ''}
     </div>
     <div class="bridge-card__children">
-      ${childStatuses.map(({ child, done, total, isComplete }) => `
+      ${childStatuses.map(({ child, isComplete }) => `
         <div class="bridge-card__child" data-child="${child.id}" data-routine="${routine.id}">
           <span class="bridge-card__child-avatar">${child.avatar}</span>
           <span class="bridge-card__child-name">${child.name}</span>
           <span class="bridge-card__child-status">
-            ${isComplete ? '✅' : `${done}/${total}`}
+            ${isComplete
+              ? '✅'
+              : `<button class="btn btn-primary btn-sm bridge-card__go">C'est fait !</button>`
+            }
           </span>
         </div>
       `).join('')}
@@ -43,11 +44,36 @@ export function renderBridgeCard(routine) {
   `;
 
   // Each child zone is clickable independently
-  card.querySelectorAll('.bridge-card__child').forEach(zone => {
-    zone.addEventListener('click', () => {
+  card.querySelectorAll('.bridge-card__go').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const zone = btn.closest('.bridge-card__child');
       const childId = zone.dataset.child;
       const routineId = zone.dataset.routine;
-      navigate(`#/routine/${routineId}/${childId}`);
+
+      const result = completeRoutine(childId, routineId);
+      if (result && !result.alreadyDone) {
+        playSound('routine-done');
+        // Update this child's status
+        zone.querySelector('.bridge-card__child-status').innerHTML = '✅';
+
+        // Star burst
+        const burst = document.createElement('div');
+        burst.className = 'star-burst';
+        burst.innerHTML = `⭐ +${result.starsEarned}`;
+        zone.appendChild(burst);
+        setTimeout(() => burst.remove(), 1500);
+
+        // Check if all children are now done
+        const allDone = [...card.querySelectorAll('.bridge-card__child-status')]
+          .every(s => s.textContent.trim() === '✅');
+        if (allDone) {
+          card.querySelector('.bridge-card__header').style.opacity = '0.6';
+          const headerSpan = document.createElement('span');
+          headerSpan.textContent = '✅';
+          card.querySelector('.bridge-card__header').appendChild(headerSpan);
+        }
+      }
     });
   });
 

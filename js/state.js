@@ -188,6 +188,39 @@ export function toggleStep(childId, routineId, stepIndex) {
   return { isComplete, starsEarned: progress.starsEarned };
 }
 
+// Complete an entire routine at once (no checklist)
+export function completeRoutine(childId, routineId) {
+  const child = getChild(childId);
+  const routine = getRoutine(routineId);
+  if (!child || !routine) return null;
+
+  const dateKey = todayKey();
+  ensureHistory(child, dateKey, routineId, routine.steps.length);
+
+  const progress = child.history[dateKey].routines[routineId];
+
+  // Already completed today
+  if (progress.completedAt) return { alreadyDone: true, starsEarned: 0 };
+
+  // Mark all steps as completed
+  progress.completedSteps = routine.steps.map((_, i) => i);
+  progress.completedAt = new Date().toISOString();
+  progress.starsEarned = routine.starsPerCompletion || 3;
+  child.stars = (child.stars || 0) + progress.starsEarned;
+  updateStreaks(child);
+  checkTrophies(child);
+
+  // Check if all routines for today are complete
+  const todayRoutines = getTodayRoutines(childId);
+  child.history[dateKey].allCompleted = todayRoutines.every(r => {
+    const rp = child.history[dateKey]?.routines[r.id];
+    return rp && rp.completedAt;
+  });
+
+  saveState();
+  return { alreadyDone: false, starsEarned: progress.starsEarned };
+}
+
 export function getRoutineProgress(childId, routineId) {
   const child = getChild(childId);
   const routine = getRoutine(routineId);

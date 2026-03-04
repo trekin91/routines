@@ -8,6 +8,7 @@
 html, body {
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 16px;
   color: var(--color-text);
@@ -149,6 +150,13 @@ h3 { font-size: var(--fs-md); font-weight: 600; }
 .btn-danger {
   background: var(--color-danger);
   color: white;
+}
+
+.btn-sm {
+  min-height: 36px;
+  min-width: unset;
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: var(--fs-sm);
 }
 
 .btn-outline {

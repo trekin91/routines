@@ -4,6 +4,7 @@ import { getState, deleteChild, deleteRoutine, updateSettings, resetAll } from '
 import { navigate } from '../router.js';
 import { showConfirm } from '../components/modal.js';
 import { DAYS_SHORT, FR } from '../utils.js';
+import { onKioskToggle } from '../kiosk.js';
 
 export function render(container, params) {
   const state = getState();
@@ -176,7 +177,9 @@ export function render(container, params) {
   // Toggles
   document.getElementById('kiosk-toggle')?.addEventListener('click', function() {
     this.classList.toggle('toggle--active');
-    updateSettings({ kioskMode: this.classList.contains('toggle--active') });
+    const enabled = this.classList.contains('toggle--active');
+    updateSettings({ kioskMode: enabled });
+    onKioskToggle(enabled);
   });
 
   document.getElementById('sound-toggle')?.addEventListener('click', function() {
